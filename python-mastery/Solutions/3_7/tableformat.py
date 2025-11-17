@@ -19,7 +19,7 @@ class TableFormatter(ABC):
     def row(self, rowdata):
         pass
 
-class TextTableFormatter(TableFormatter):
+class (TableFormatter):
     def headings(self, headers):
         print(' '.join('%10s' % h for h in headers))
         print(('-'*10 + ' ')*len(headers))

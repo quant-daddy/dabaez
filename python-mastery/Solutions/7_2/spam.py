@@ -1,4 +1,5 @@
-from logcall import logged
+from structly.logcall import logged
+
 
 class Spam:
     @logged
