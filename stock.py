@@ -16,8 +16,7 @@ class Stock(Structure):
 
 
 if __name__ == "__main__":
-    from structly import *
-    # from structly import create_formatter, print_table
+    from structly import read_csv_as_instances, create_formatter, print_table
 
     portfolio = read_csv_as_instances("python-mastery/Data/portfolio.csv", Stock)
     formatter = create_formatter("text")

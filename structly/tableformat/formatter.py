@@ -3,6 +3,8 @@ from typing import Any, Literal, Sequence
 
 
 class TableFormatter(ABC):
+    _formats = {}
+
     @abstractmethod
     def headings(self, headers):
         pass
@@ -10,6 +12,11 @@ class TableFormatter(ABC):
     @abstractmethod
     def row(self, rowdata):
         pass
+
+    @classmethod
+    def __init_subclass__(cls):
+        name = cls.__module__.split(".")[-1]
+        TableFormatter._formats[name] = cls
 
 
 def print_table(
@@ -27,12 +34,12 @@ def print_table(
         # print(f"{getattr(stock, 'name'):>10s} {stock.quantity:10d} {stock.price:10.2f}")
 
 
-from .formats import *
-
-
 def create_formatter(
     format: Literal["csv", "html", "text"], upper_headers=False, column_formats=None
 ):
+    if format not in TableFormatter._formats:
+        __import__(f"{__package__}.formats.{format}")
+
     class UpperHeadersMixin:
         def headings(self, headers: Sequence[str]):
             super().headings(
@@ -50,17 +57,11 @@ def create_formatter(
             )
             super().row(rowdata)
 
-    match format:
-        case "csv":
-            BaseFormatter = CSVTableFormatter
-        case "html":
-            BaseFormatter = HTMLTableFormatter
-        case "text":
-            BaseFormatter = TextTableFormatter
-        case _:
-            raise ValueError(f"Unknown format {format}")
+    formatter_cls = TableFormatter._formats.get(format)
+    if formatter_cls is None:
+        raise RuntimeError("Unknown format %s", format)
 
-    class Formatter(ColumnFormatMixin, UpperHeadersMixin, BaseFormatter):
+    class Formatter(ColumnFormatMixin, UpperHeadersMixin, formatter_cls):
         pass
 
     return Formatter()
